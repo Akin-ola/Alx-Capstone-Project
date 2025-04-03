@@ -38,10 +38,13 @@ task_status = {
 
 status_options = {'serviceable':'S', 'unserviceable':'U/S'}
 
+role_choices = {'Admin': 'Admin', 'User': 'User'}
+
 
 class Technician(AbstractUser):
     service_no = models.CharField(max_length=50, unique=True, blank=False)
     rank = models.CharField(max_length=30, choices=ranks, editable=True)
+    role = models.CharField(max_length=20, choices=role_choices, default='User')
     email = models.EmailField(null=True, blank=False, max_length=100)
     profile_picture = models.ImageField(blank=True)
 
@@ -84,8 +87,16 @@ class Maintenance(models.Model):
     task_date = models.DateField(auto_now_add=True, blank=False)
     remarks = models.CharField(max_length=255, blank=False)
 
+    
     def __str__(self):
         return f"{self.task} maintenance on {self.equipment}, on {self.task_date}."
+
+    def save(self, *args, **kwargs):
+        if self.pk:
+            original = Maintenance.objects.get(pk=self.pk)
+            if original.technician != self.technician:
+                raise ValueError('Technician are not allow to quit.')
+            super().save(*args, **kwargs)
 
 
 @receiver(post_save, sender=settings.AUTH_USER_MODEL)

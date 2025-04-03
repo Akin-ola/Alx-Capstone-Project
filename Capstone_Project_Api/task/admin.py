@@ -15,7 +15,7 @@ class TechnicianAdmin(admin.ModelAdmin):
 
 @admin.register(Maintenance)
 class MaintenanceAdmin(admin.ModelAdmin):
-    list_display = ['equipment', 'task', 'task_date']
+    list_display = ['equipment', 'task', 'remarks']
     list_filter = ['equipment', 'task', 'task_date']
     search_fields = ['equipment', 'technician' 'task', 'task_date']
 
