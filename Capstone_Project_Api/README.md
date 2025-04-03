@@ -24,3 +24,4 @@ Maintenance will be a table of record for all the maintenance activities that ha
 I will be using the rest_framework Token authentication for the users authentications
 and rest_framework IsAuthenticated for their permission.
 
+I had a database bug I must add this to this file.
