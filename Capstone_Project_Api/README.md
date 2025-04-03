@@ -25,3 +25,10 @@ I will be using the rest_framework Token authentication for the users authentica
 and rest_framework IsAuthenticated for their permission.
 
 I had a database bug I must add this to this file.
+
+I created a custom permission for the admin user inheriting from Basepermission 
+this will enable me to implement some prevelages for the admin user.
+
+Implementation of views and appropriate status code is ongoing.
+
+ 
