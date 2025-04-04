@@ -3,7 +3,7 @@ from rest_framework.authtoken.views import obtain_auth_token
 from . import views
 
 urlpatterns = [
-    path('login/', obtain_auth_token, name='login'),
+    path('login/', obtain_auth_token, name='login'),  #Rest framework built in login that generates Token for user with valid credentials
     path('logout/', views.LogoutView.as_view(), name= 'logout'),
     path('register/', views.registration_view, name='registration'),
     path('equipments/', views.EquipmentListCreateView.as_view(), name='equipment'),

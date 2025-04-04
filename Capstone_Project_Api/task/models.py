@@ -4,10 +4,8 @@ from django.conf import settings
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from rest_framework.authtoken.models import Token
-    
 
-
-# Create your models here.
+#These are global choices for model classes.
 ranks = {
        'Aircraftman': 'ACM', 'L/Corporal': 'LCPL', 'Corporal': 'CPL', 'Sergeant': 'SGT',
        'F/Sergeant': 'FS', 'Warrant Officer': 'WO', 'Master Warrant Officer': 'MWO', 'Air Warrant Officer': 'AWO',
@@ -40,7 +38,7 @@ status_options = {'serviceable':'S', 'unserviceable':'U/S'}
 
 role_choices = {'Admin': 'Admin', 'User': 'User'}
 
-
+#The Technician model is the CustomUser for the project which extends the abstract user.
 class Technician(AbstractUser):
     service_no = models.CharField(max_length=50, unique=True, blank=False)
     rank = models.CharField(max_length=30, choices=ranks, editable=True)
@@ -48,7 +46,7 @@ class Technician(AbstractUser):
     email = models.EmailField(null=True, blank=False, max_length=100)
     profile_picture = models.ImageField(blank=True)
 
-    USERNAME_FIELD = 'service_no'
+    USERNAME_FIELD = 'service_no'       #Make the service_no field an important field, unique and can't be changed.
     REQUIRED_FIELDS = ['username']
 
 
@@ -91,6 +89,7 @@ class Maintenance(models.Model):
     def __str__(self):
         return f"{self.task} on {self.equipment}, on {self.task_date}."
 
+#This save function ensure that a technician can not assign another technician to their maintenance record.
     def save(self, *args, **kwargs):
         if self.pk:
             original = Maintenance.objects.get(pk=self.pk)
@@ -101,7 +100,7 @@ class Maintenance(models.Model):
         super().save(*args, **kwargs)
         return self
 
-
+#This function ensure Authentication Token is generated for all user upon creation.
 @receiver(post_save, sender=settings.AUTH_USER_MODEL)
 def get_auth_token(sender, instance=None, created=False, **kwargs):
     if created:

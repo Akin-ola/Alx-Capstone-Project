@@ -15,6 +15,8 @@ from .serializers import (
     RegistrationSerializer)
 
 
+#Additionally to the Token Authentication for all user with valid credentials, certain activities are reserve for admin user
+#therefore the need to implement a custom permission for admin users.
 
 class AdminAuthenticatedUser(permissions.BasePermission):
     def has_permission(self, request, view):
@@ -28,12 +30,14 @@ class AdminAuthenticatedUser(permissions.BasePermission):
             has_per = is_authenticated and user_role == "Admin"
             # print(f"POST permission: {has_per}")
             return has_per 
-        elif request.method == "GET":
+        elif request.method in permissions.SAFE_METHODS:
             has_per = is_authenticated and user_role == "Admin" or "User"
             # print(f"GET Permission: {has_per}")
             return has_per
         return False
 
+#This permission allows only a technician to update their own record on the maintenance log.
+#Other authorized users only have safe methods permission
 class IsOwnerOrReadOnly(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
         if request.method in permissions.SAFE_METHODS:
@@ -124,6 +128,7 @@ def registration_view(request):
     else:
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     return Response(data, status=status.HTTP_201_CREATED)
+
     
 class LogoutView(APIView):
     permission_classes = [IsAuthenticated]
