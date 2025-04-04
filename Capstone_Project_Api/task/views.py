@@ -1,19 +1,18 @@
+from rest_framework.views import APIView
 from rest_framework import permissions
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.authtoken.models import Token
 from rest_framework.permissions import IsAuthenticated
-from rest_framework import generics, viewsets
+from rest_framework import generics
+from .models import Task, Technician, Maintenance, Equipment
 from .serializers import (
     MaintenanceSerializer,
     TaskSerializer,
     TechnicianSerializer,
     EquipmentSerializer,
-    RegistrationSerializer
-)
-from .models import Task, Technician, Maintenance, Equipment
-from django.contrib.auth import authenticate, login
+    RegistrationSerializer)
 
 
 
@@ -42,13 +41,24 @@ class IsOwnerOrReadOnly(permissions.BasePermission):
         return obj.technician == request.user
      
 
+class TechnicianListView(generics.ListAPIView):
+    queryset = Technician.objects.all()
+    serializer_class = TechnicianSerializer
+    permission_classes = [IsAuthenticated]
+
+class TechnicianRUDView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Technician.objects.all()
+    serializer_class = TechnicianSerializer
+    permission_classes = [AdminAuthenticatedUser]
+
+
 class EquipmentListCreateView(generics.ListCreateAPIView):
     queryset = Equipment.objects.all()
     serializer_class = EquipmentSerializer
     permission_classes = [AdminAuthenticatedUser]
 
 
-class EquipmentUpdateView(generics.RetrieveUpdateAPIView):
+class EquipmentRetrieveUpdateView(generics.RetrieveUpdateAPIView):
     queryset = Equipment.objects.all()
     serializer_class = EquipmentSerializer
     permission_classes = [AdminAuthenticatedUser]
@@ -63,6 +73,10 @@ class TaskListCreateView(generics.ListCreateAPIView):
 class MaintenanceListCreateView(generics.ListCreateAPIView):
     queryset = Maintenance.objects.all()
     serializer_class = MaintenanceSerializer
+
+    # def create(self, request, *args, **kwargs):
+    #     if Maintenance.objects.create(technician=request.user):
+    #         return super().create(request, *args, **kwargs)    
 
 
 class MaintenanceUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
@@ -87,10 +101,11 @@ class MaintenanceUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
     def delete(self, request, *args, **kwargs):
         maintenace = self.get_object()
         user = self.request.user
-        if user == "Admin":
+        if user.role == "Admin":
+            print(user.role)
             maintenace.delete()
             return Response(status= status.HTTP_204_NO_CONTENT)
-        return Response({'You do not have permission to perform this operation'}, status=status.HTTP_401_UNAUTHORIZED)
+        return Response({'You do not have permission to perform this operation'}, status=status.HTTP_403_FORBIDDEN)
 
 
 
@@ -110,4 +125,14 @@ def registration_view(request):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     return Response(data, status=status.HTTP_201_CREATED)
     
+class LogoutView(APIView):
+    permission_classes = [IsAuthenticated]
+    
+    def post(self, request):
+        try:
+            token = Token.objects.get(user=request.user)
+            token.delete()
+            return Response({'message: Successfully logged out.'}, status=status.HTTP_200_OK)
+        except Token.DoesNotExist:
+            return Response({'error: Token not found'}, status=status.HTTP_400_BAD_REQUEST)
 

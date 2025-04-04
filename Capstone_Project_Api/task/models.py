@@ -17,12 +17,12 @@ ranks = {
 }
     
 maint_category = {
-    'Periodic': 'Periodic',
-    'Preventive': 'Preventive',
-    'Category A': 'Category A',
-    'Category B': 'Category B',
-    'Category C': 'Category C',
-    'Category D': 'Category D'
+    'Periodic maintenance': 'Periodic maintenance',
+    'Preventive maintenance': 'Preventive maintenance',
+    'Category A maintenance': 'Category A maintenance',
+    'Category B maintenance': 'Category B maintenance',
+    'Category C maintenance': 'Category C maintenance',
+    'Category D maintenance': 'Category D maintenance'
 }
 
 priority ={
@@ -77,26 +77,29 @@ class Task(models.Model):
     date_created = models.DateField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.title} is of {self.priority_level} priority and {self.status}."
+        return f'{self.title} on {self.equipment}'
 
 
 class Maintenance(models.Model):
     equipment = models.ForeignKey(Equipment, on_delete=models.CASCADE, related_name='tasks')
     technician = models.ForeignKey(Technician, on_delete=models.CASCADE, related_name='task_record')
     task = models.ForeignKey(Task, blank=False, null=True, on_delete=models.CASCADE)
-    task_date = models.DateField(auto_now_add=True, blank=False)
+    task_date = models.DateField(auto_now_add=True)
     remarks = models.CharField(max_length=255, blank=False)
 
     
     def __str__(self):
-        return f"{self.task} maintenance on {self.equipment}, on {self.task_date}."
+        return f"{self.task} on {self.equipment}, on {self.task_date}."
 
     def save(self, *args, **kwargs):
         if self.pk:
             original = Maintenance.objects.get(pk=self.pk)
             if original.technician != self.technician:
-                raise ValueError('Technician are not allow to quit.')
-            super().save(*args, **kwargs)
+                raise ValueError('Technicians are not allowed to quit.')
+        if Maintenance.objects.filter(task=self.task).exclude(technician=self.technician).exists():
+            raise ValueError('This task has already been registered by another Technician.')
+        super().save(*args, **kwargs)
+        return self
 
 
 @receiver(post_save, sender=settings.AUTH_USER_MODEL)

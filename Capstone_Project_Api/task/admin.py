@@ -21,6 +21,6 @@ class MaintenanceAdmin(admin.ModelAdmin):
 
 @admin.register(Task)
 class TaskAdmin(admin.ModelAdmin):
-    list_display = ['title', 'equipment', 'priority_level', 'status']
+    list_display = ['priority_level', 'status', 'title']
     list_filter = ['equipment', 'priority_level']
     search_fields = ['title', 'status']
