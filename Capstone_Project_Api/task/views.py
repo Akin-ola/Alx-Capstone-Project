@@ -49,6 +49,7 @@ class TechnicianListView(generics.ListAPIView):
     queryset = Technician.objects.all()
     serializer_class = TechnicianSerializer
     permission_classes = [IsAuthenticated]
+    
 
 class TechnicianRUDView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Technician.objects.all()
@@ -77,10 +78,10 @@ class TaskListCreateView(generics.ListCreateAPIView):
 class MaintenanceListCreateView(generics.ListCreateAPIView):
     queryset = Maintenance.objects.all()
     serializer_class = MaintenanceSerializer
-
-    # def create(self, request, *args, **kwargs):
-    #     if Maintenance.objects.create(technician=request.user):
-    #         return super().create(request, *args, **kwargs)    
+ 
+    def perform_create(self, serializer):
+        task = serializer.validated_data['task']
+        serializer.save(technician=self.request.user, equipment=task.equipment)
 
 
 class MaintenanceUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
@@ -129,7 +130,7 @@ def registration_view(request):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     return Response(data, status=status.HTTP_201_CREATED)
 
-    
+
 class LogoutView(APIView):
     permission_classes = [IsAuthenticated]
     

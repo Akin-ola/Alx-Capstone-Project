@@ -87,7 +87,7 @@ class Maintenance(models.Model):
 
     
     def __str__(self):
-        return f"{self.task} on {self.equipment}, on {self.task_date}."
+        return f"{self.task}."
 
 #This save function ensure that a technician can not assign another technician to their maintenance record.
     def save(self, *args, **kwargs):

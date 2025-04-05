@@ -25,13 +25,12 @@ class TaskSerializer(serializers.ModelSerializer):
         model = models.Task
         fields = '__all__'
 
-    
-
 
 class MaintenanceSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Maintenance
         fields = '__all__'
+        read_only_fields = ['equipment', 'technician']
 
 
 
