@@ -32,6 +32,16 @@ class MaintenanceSerializer(serializers.ModelSerializer):
         fields = '__all__'
         read_only_fields = ['equipment', 'technician']
 
+    def create(self, validated_data):
+        maintenance = super().create(validated_data)
+        print("maintenance created for task", maintenance.task)
+        task = maintenance.task
+        print(task.status)
+        if task.status != 'Completed':
+            task.status = 'Completed'
+            task.save()
+            print(task.status)
+        return maintenance
 
 
 class TechnicianSerializer(serializers.ModelSerializer):

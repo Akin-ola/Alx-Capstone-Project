@@ -15,10 +15,10 @@ from .serializers import (
     RegistrationSerializer)
 
 
-#Additionally to the Token Authentication for all user with valid credentials, certain activities are reserve for admin user
-#therefore the need to implement a custom permission for admin users.
-
 class AdminAuthenticatedUser(permissions.BasePermission):
+    """Additionally to the Token Authentication for all user with valid credentials, 
+    certain activities are reserve for admin user therefore the need to implement 
+    a custom permission for admin users."""
     def has_permission(self, request, view):
         user_role = getattr(request.user, "role", None)
         is_authenticated = request.user.is_authenticated
@@ -36,9 +36,10 @@ class AdminAuthenticatedUser(permissions.BasePermission):
             return has_per
         return False
 
-#This permission allows only a technician to update their own record on the maintenance log.
-#Other authorized users only have safe methods permission
+
 class IsOwnerOrReadOnly(permissions.BasePermission):
+    """Custom permission  to allows only a technician to edit their own object.
+    other users can only perform safe (read-only) operation"""
     def has_object_permission(self, request, view, obj):
         if request.method in permissions.SAFE_METHODS:
             return True
@@ -82,7 +83,7 @@ class MaintenanceListCreateView(generics.ListCreateAPIView):
     def perform_create(self, serializer):
         task = serializer.validated_data['task']
         serializer.save(technician=self.request.user, equipment=task.equipment)
-
+        
 
 class MaintenanceUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Maintenance.objects.all()
@@ -102,16 +103,13 @@ class MaintenanceUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
-    
     def delete(self, request, *args, **kwargs):
         maintenace = self.get_object()
         user = self.request.user
         if user.role == "Admin":
-            print(user.role)
             maintenace.delete()
             return Response(status= status.HTTP_204_NO_CONTENT)
         return Response({'You do not have permission to perform this operation'}, status=status.HTTP_403_FORBIDDEN)
-
 
 
 @api_view(['POST'])
