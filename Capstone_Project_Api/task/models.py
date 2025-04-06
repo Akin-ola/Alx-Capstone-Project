@@ -15,12 +15,12 @@ ranks = {
 }
     
 maint_category = {
-    'Periodic maintenance': 'Periodic maintenance',
-    'Preventive maintenance': 'Preventive maintenance',
-    'Category A maintenance': 'Category A maintenance',
-    'Category B maintenance': 'Category B maintenance',
-    'Category C maintenance': 'Category C maintenance',
-    'Category D maintenance': 'Category D maintenance'
+    'TM': 'Periodic maintenance',
+    'PM': 'Preventive maintenance',
+    'CAM': 'Category A maintenance',
+    'CBM': 'Category B maintenance',
+    'CCM': 'Category C maintenance',
+    'CDM': 'Category D maintenance'
 }
 
 priority ={
@@ -34,7 +34,7 @@ task_status = {
     'Completed':'Completed'
 }
 
-status_options = {'serviceable':'S', 'unserviceable':'U/S'}
+status_options = {'S':'Serviceable', 'U/S':'Unserviceable'}
 
 role_choices = {'Admin': 'Admin', 'User': 'User'}
 
@@ -48,7 +48,6 @@ class Technician(AbstractUser):
 
     USERNAME_FIELD = 'service_no'       #Make the service_no field an important field, unique and can't be changed.
     REQUIRED_FIELDS = ['username']
-
 
     def __str__(self):
         return f"{self.username}"
@@ -67,11 +66,11 @@ class Equipment(models.Model):
 
 class Task(models.Model):
     title = models.CharField(max_length=200, choices=maint_category, blank=False)
-    equipment = models.ForeignKey(Equipment, null=True, on_delete=models.CASCADE, related_name='task')
+    equipment = models.ForeignKey(Equipment, on_delete=models.CASCADE, related_name='task')
     description = models.CharField(max_length=200, blank=False)
     due_date = models.DateField(blank=False)
     priority_level = models.CharField(max_length=50, choices=priority, blank=False)
-    status = models.CharField(max_length=50, choices=task_status, blank=False)
+    status = models.CharField(max_length=50, choices=task_status, default='Pending', blank=False)
     date_created = models.DateField(auto_now_add=True)
 
     def __str__(self):
@@ -81,11 +80,10 @@ class Task(models.Model):
 class Maintenance(models.Model):
     equipment = models.ForeignKey(Equipment, on_delete=models.CASCADE, related_name='tasks')
     technician = models.ForeignKey(Technician, on_delete=models.CASCADE, related_name='task_record')
-    task = models.ForeignKey(Task, blank=False, null=True, on_delete=models.CASCADE)
+    task = models.ForeignKey(Task, blank=False, on_delete=models.CASCADE)
     task_date = models.DateField(auto_now_add=True)
     remarks = models.CharField(max_length=255, blank=False)
 
-    
     def __str__(self):
         return f"{self.task}."
 

@@ -7,6 +7,7 @@ from rest_framework.authtoken.models import Token
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import generics
 from .models import Task, Technician, Maintenance, Equipment
+from django_filters.rest_framework import DjangoFilterBackend
 from .serializers import (
     MaintenanceSerializer,
     TaskSerializer,
@@ -18,20 +19,21 @@ from .serializers import (
 class AdminAuthenticatedUser(permissions.BasePermission):
     """Additionally to the Token Authentication for all user with valid credentials, 
     certain activities are reserve for admin user therefore the need to implement 
-    a custom permission for admin users."""
+    a custom permission for admin user s."""
     def has_permission(self, request, view):
         user_role = getattr(request.user, "role", None)
         is_authenticated = request.user.is_authenticated
+        """The print statements are for debugging"""
         # print(f"user: {request.user}")
         # print(f"auth: {is_authenticated}")
         # print(f"user role: {user_role}")
         # print(f"Request Method: {request.method}")
-        if request.method == 'POST':
+        if request.method not in permissions.SAFE_METHODS:
             has_per = is_authenticated and user_role == "Admin"
             # print(f"POST permission: {has_per}")
             return has_per 
         elif request.method in permissions.SAFE_METHODS:
-            has_per = is_authenticated and user_role == "Admin" or "User"
+            has_per = is_authenticated
             # print(f"GET Permission: {has_per}")
             return has_per
         return False
@@ -50,12 +52,14 @@ class TechnicianListView(generics.ListAPIView):
     queryset = Technician.objects.all()
     serializer_class = TechnicianSerializer
     permission_classes = [IsAuthenticated]
-    
+
 
 class TechnicianRUDView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Technician.objects.all()
     serializer_class = TechnicianSerializer
-    permission_classes = [AdminAuthenticatedUser]
+    permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['service_no']
 
 
 class EquipmentListCreateView(generics.ListCreateAPIView):
@@ -68,18 +72,28 @@ class EquipmentRetrieveUpdateView(generics.RetrieveUpdateAPIView):
     queryset = Equipment.objects.all()
     serializer_class = EquipmentSerializer
     permission_classes = [AdminAuthenticatedUser]
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['serial_no', 'svc_status']
 
 
 class TaskListCreateView(generics.ListCreateAPIView):
+    permission_classes = [AdminAuthenticatedUser]
+    queryset = Task.objects.all()
+    serializer_class = TaskSerializer
+    
+
+class TaskRetrieveUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Task.objects.all()
     serializer_class = TaskSerializer
     permission_classes = [AdminAuthenticatedUser]
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['due_date', 'status']
 
 
 class MaintenanceListCreateView(generics.ListCreateAPIView):
     queryset = Maintenance.objects.all()
     serializer_class = MaintenanceSerializer
- 
+       
     def perform_create(self, serializer):
         task = serializer.validated_data['task']
         serializer.save(technician=self.request.user, equipment=task.equipment)
@@ -89,6 +103,8 @@ class MaintenanceUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Maintenance.objects.all()
     serializer_class = MaintenanceSerializer
     permission_classes = [IsAuthenticated, IsOwnerOrReadOnly]
+    filter_backends = [DjangoFilterBackend] 
+    filterset_fields = ['technician', 'task_date']
 
     def get(self, request, *args, **kwargs):
         maintenance = self.get_object()

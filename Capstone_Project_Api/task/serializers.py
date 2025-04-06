@@ -34,13 +34,13 @@ class MaintenanceSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         maintenance = super().create(validated_data)
-        print("maintenance created for task", maintenance.task)
+        print("maintenance created for task", maintenance.task)    #Just for debugging
         task = maintenance.task
-        print(task.status)
+        print(task.status)    #Just for debugging
         if task.status != 'Completed':
             task.status = 'Completed'
             task.save()
-            print(task.status)
+            print(task.status)    #Just for debugging
         return maintenance
 
 
