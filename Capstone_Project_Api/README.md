@@ -34,7 +34,7 @@ I aslo implement another custom permission to be user for maintenance related en
 
 I configured MySQL database in the project in place of the django SQLite3.
 
-I had a database bug, I must add this to this file, it has to do with my customUser implementation, I had to drop the database for another one. Not as simple as this.
+I had a database bug, I must add this to this file, it has to do with my customUser implementation, I had to drop the database for another one. Not as simple as this, I persevered.
 
 The following are my API endpoints with their methods.
 
