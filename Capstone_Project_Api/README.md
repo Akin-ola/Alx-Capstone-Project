@@ -51,3 +51,4 @@ METHODS                  ENDPOINTS              FUNCTIONS
 'GET'/'PUT'/'DELETE'   'maintenance/<int:pk>/',     for retrieving, updating and deleting of maintenance record
 'GET'                  'technicians/',        for listing all the user(technicians)
 'GET'/'PUT'/'DELETE'   'technician/<int:pk>/',     for retrieving, updating and deleting of record
+The begginning of a new era.
